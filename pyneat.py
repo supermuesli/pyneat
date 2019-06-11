@@ -190,7 +190,7 @@ def demo():
 
 	# a neuralnet with 2 input_nodes, 3 hidden_nodes, 4 hidden_nodes, 1 output_node,
 	# 3 (amount of layers - 1) linear activation functions,
-	# name 'neural_boi' (defaults to 'timestamp').
+	# name 'addition' (defaults to 'timestamp').
 	nn = Neuralnet((2, 3, 4, 1), (linear, linear, linear), 'addition')
 	
 	# set mutationrate to 10% (defaults to 5%),
