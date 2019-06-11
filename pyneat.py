@@ -167,7 +167,7 @@ class Neuralnet:
 			weights_file = open(cwd + json_file + '.json', 'r')
 		except:
 			print('WARNING: file ', json_file + '.json', ' not found. New file will be created.')
-			return
+			weights_file = open(cwd + json_file + '.json', 'w')
 
 		w_dict = json.load(weights_file)
 		for i in range(len(self.weights)):
