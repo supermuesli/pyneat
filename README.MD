@@ -1,10 +1,12 @@
 # pyneat
 
+A python module that implements neural networks capable of applying NEAT.
+
 #### python3 requirements
 - numpy
 
 #### what to expect of pyneat
-- easily generate arbitrary neural networks made for reinforcement as well as supevised learning
+- easily generate arbitrary neural networks made for reinforcement as well as supervised learning
 - easily set activation functions per layer
 - easily provide a fitness function per model
 - easily save and load weights using json
