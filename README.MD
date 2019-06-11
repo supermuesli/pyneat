@@ -17,7 +17,7 @@ import pyneat as pn
 
 # create a neuralnet with 2 input_nodes, 3 hidden_nodes, 4 hidden_nodes and 1 output_node.
 # specify the 3 (amount of layers - 1) activation functions, in this case all linear.
-# set the name of thee model to 'addition' (defaults to 'timestamp').
+# set the name of the model to 'addition' (defaults to 'timestamp').
 nn = pn.Neuralnet((2, 3, 4, 1), (pn.linear, pn.linear, pn.linear), 'addition')
 
 # set mutationrate to 10% (defaults to 5%),
