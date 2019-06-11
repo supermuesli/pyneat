@@ -32,7 +32,7 @@ outputs = [[2], [4], [6], [8], [10], [1], [1], [110], [110]]
 
 # define a fitness function to train with.
 # any positively growing function with respect to
-# positively counting attributes will suffice. pn. MSE computes the mean squared error
+# positively counting attributes will suffice. pn.MSE computes the mean squared error
 # of a supervised learning model.
 def fitness(): return -pn.MSE(nn, inputs, outputs)
 
