@@ -1,3 +1,4 @@
+import numpy as np
 import json, datetime, math, random, os, re, subprocess
 
 # =============================================================================
@@ -9,7 +10,7 @@ cwd = os.getcwd() + '/'
 
 # generate some floats as means of optimization.
 random_floats = [random.random() for i in range(100000)]
-random_floats_index = -1
+random_floats_index = 0
 random_floats_length = len(random_floats)
 
 # returns the next random float in sequence.
@@ -141,7 +142,10 @@ def cpu_count():
 
 # sigmoid function.
 def sigmoid(x):
-	return 1/(1 + math.exp(-x))
+	# prevent overflow.
+	x = np.clip(x, -500, 500)
+
+	return 1.0/( 1 + np.exp(-x))
 
 # rectified linear unit.
 def relu(x):
@@ -151,7 +155,9 @@ def relu(x):
 def linear(x):
 	return x
 
+# activation functions pool.
 act_func_pool = [sigmoid, relu, linear]
+act_func_pool_len = len(act_func_pool)
 
 # =============================================================================
 # error functions
@@ -188,15 +194,20 @@ def MSE(neuralnet_, inputs, outputs):
 # =============================================================================
 
 class Node:
-	def __init__(self, adjacents, weights, activation_func, value=0):
+	def __init__(self, adjacents, weights, activation_func):
 		self.adjacents = adjacents
 		self.weights = weights
-		self.value = value
+		self.value = 0
 		self.activation_func = activation_func
+
+		# number in range [0, 1]. percentage of a nodes value that will remain 
+		# when the neuralnet is reset (initially 0). this will sort of mimic 
+		# memory. reset_rates can mutate per node. 
+		self.reset_rate = 0
 
 	def forward(self):
 		if len(self.adjacents) != len(self.weights):
-			print(self.adjacents, self.weights)
+			print(len(self.adjacents), len(self.weights))
 			#print('ERROR: len(Node.adjacents != len(Node.weights))')
 			return
 
@@ -204,17 +215,25 @@ class Node:
 			return
 		for i in range(len(self.adjacents)):
 			self.adjacents[i].value += self.value * self.weights[i]
+
+	def reset(self):
+		self.value *= self.reset_rate
 			
 class Neuralnet:
 	def __init__(self, init_layer_sizes, activation_func, name=''):
+		# use the name for convenient loading/saving of entire neuralnets
 		self.name = name
+
+		# the initial activation function for all nodes. these
+		# can mutate per node.
 		self.activation_func = activation_func
 
 		# first create empty nodes for all layers
 		self.layers = [[Node([], [], self.activation_func) for j in range(init_layer_sizes[i])] for i in range(len(init_layer_sizes))]
 
 		# now define the adjacent-lists for each node for each layer except the last.
-		# to begin with, this will be a feed forward neural network.
+		# to begin with, this will be a feed forward neural network. mutation can
+		# eventually turn this into a recurrent neural network.
 		for i in range(len(self.layers)-1):
 			for j in range(len(self.layers[i])):
 				self.layers[i][j].adjacents = self.layers[i+1]
@@ -222,18 +241,19 @@ class Neuralnet:
 
 		# use this to undo a bad mutation.
 		self.prev_layers = self.layers
+		
+		# use these to determine good/bad mutations.
 		self.fitness = -math.inf
-
-		# number in range [0, 1]. probability of weight mutation 
-		self.mutation_rate = 0.05
-
 		self.fitness_func = None
 
-	# reset all node values back to 0.
+		# number in range [0, 1]. probability of arbitrary mutation.
+		self.mutation_rate = 0.05
+
+	# resets all node values based on their reset_rates.
 	def reset(self):
 		for layer in self.layers:
 			for node in layer:
-				node.value = 0
+				node.reset()
 
 	# propagate forwards and return the resulting output layer as a list.
 	# input_ is the list of values that are to be passed into the input layer.
@@ -259,7 +279,7 @@ class Neuralnet:
 		# saves values of last layer
 		res = [node.value for node in self.layers[-1]]
 
-		# reset nodes
+		# reset all nodes based on their reset_rates.
 		self.reset()
 
 		return res
@@ -268,6 +288,7 @@ class Neuralnet:
 		# =====================================================================
 		# mutate topology
 		# =====================================================================
+
 		# case 1: change amount of nodes of a layer
 		#if next_float() < self.mutation_rate:
 		#	# do not change input or output layers
@@ -287,28 +308,33 @@ class Neuralnet:
 		#		
 		#		# create a node
 		#		if next_float() < self.mutation_rate:
+		#			# winners will hold the new nodes adjacent nodes.
 		#			winners = []
-		#			for layer_ in self.layers[i:]:
+		#			for layer_ in self.layers:
 		#				for node_ in layer_:
 		#					if next_float() < self.mutation_rate:
 		#						winners += [node_]
 		#			if winners != []:
-		#				self.layers[i] += [Node(winners, [next_neg_float() for j in winners], act_func_pool[int(next_float()*len(act_func_pool))])]
+		#				self.layers[i] += [Node(winners, [next_neg_float() for j in winners], act_func_pool[int(next_float()*act_func_pool_len)])]
 
 		# =====================================================================
-		# mutate weights
+		# mutate weights, activation functions and reset_rates
 		# =====================================================================
+
 		for layer in self.layers:
 			for node in layer:
+				# mutate weights
 				for i in range(len(node.weights)):
 					if next_float() < self.mutation_rate:
 						node.weights[i] = next_neg_float()
 
-		# =====================================================================
-		# mutate activation functions
-		# =====================================================================
-		if next_float() < self.mutation_rate:
-			pass
+				# mutate activation function
+				if next_float() < self.mutation_rate:
+					node.activation_func = act_func_pool[int(next_float()*act_func_pool_len)]
+				
+				# mutate reset_rate
+				if next_float() < self.mutation_rate:
+					node.reset_rate = next_float()
 
 	# train for n cycles and save the topology/weights if they improved after each cycle.
 	def train(self, cycles):
@@ -320,7 +346,6 @@ class Neuralnet:
 			print('ERROR: fitness_func of model ', self.name, ' is None.')
 			return
 
-		# TODO: multitreading
 		for n in range(cycles):
 			self.mutate()
 			
@@ -344,6 +369,7 @@ class Neuralnet:
 
 	# dump the weights into a json. 
 	# you may provide an output name (defaults to datetime).
+	# TODO: save topology, activation functions, reset_rates
 	def save(self, name=''):
 		if name == '':
 			date_time = (str(datetime.datetime.now()).split('.')[0]).split(' ')
@@ -359,6 +385,7 @@ class Neuralnet:
 		file_.close()
 
 	# load weights from a json.
+	# TODO: load topology, activation functions, reset_rates
 	def load(self, json_file):
 		try:
 			weights_file = open(cwd + json_file + '.json', 'r')
@@ -386,10 +413,10 @@ def demo():
 
 	# this demo implements a neural network that learns a dataset by applying NEAT.
 
-	# a neuralnet with 2 input_nodes, 3 hidden_nodes, 4 hidden_nodes, 1 output_node,
+	# a neuralnet with 2 input_nodes, 2 hidden_nodes, 1 output_node,
 	# an initial activation function for all nodes
 	# name 'docs/addition' (defaults to 'timestamp').
-	nn = Neuralnet([2, 3, 4, 1], linear, 'docs/addition')
+	nn = Neuralnet([2, 1], linear, 'docs/addition')
 	
 	# set mutationrate to 10% (defaults to 5%),
 	nn.mutation_rate = 0.1
@@ -397,7 +424,7 @@ def demo():
 	# load its weights (we already have a json dump. after each good mutation,
 	# the weights will be dumped into a json).
 	# this step is not neccesary.
-	nn.load(nn.name)
+	#nn.load(nn.name)
 
 	# a dataset. this one yields basic addition.
 	inputs = [[1,1], [2,2], [3,3], [4,4], [5,5], [1,0], [0.5,0.5], [10,100], [100,10]]
@@ -412,7 +439,7 @@ def demo():
 	nn.fitness_func = fitness
 
 	# train the model.
-	nn.train(1000000)
+	nn.train(1000)
 
 	# use the model.
 	print('15 + 5 = ', nn.forward([15, 5]))
