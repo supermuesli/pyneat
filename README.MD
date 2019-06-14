@@ -2,8 +2,13 @@
 
 A python module that implements neural networks capable of applying NEAT.
 
-#### python3 requirements
+#### python3 dependencies
 - numpy
+- graphviz
+- matplotlib
+
+#### software dependencies
+- graphviz
 
 #### what to expect of pyneat
 - easily generate arbitrary neural networks made for reinforcement learning
