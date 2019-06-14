@@ -1,7 +1,8 @@
 from graphviz import Digraph
 import numpy as np
 import matplotlib.pyplot as plt
-import json, datetime, math, random, os, webbrowser, re, subprocess
+import ujson as json
+import datetime, math, random, os, webbrowser, re, subprocess
 
 # =============================================================================
 # misc
@@ -212,7 +213,8 @@ class Node:
 			return
 
 		if self.adjacents == []:
-			return 0
+			return
+
 		for i in range(len(self.adjacents)):
 			self.adjacents[i].value += self.value * self.weights[i]
 
@@ -322,13 +324,13 @@ class Neuralnet:
 		dot.format = 'svg'
 
 		for i in range(self.o_start, self.o_end):
-			dot.node(str(self.nodes[i]), 'output_'+str(i), shape='star')
+			dot.node(str(self.nodes[i]), 'output_'+str(i), style='filled', fillcolor='#d62728', shape='rarrow', rank='rightmost!')
 
 		for i in range(self.i_start, self.i_end):
-			dot.node(str(self.nodes[i]), 'input_'+str(i), shape='rarrow')
+			dot.node(str(self.nodes[i]), 'input_'+str(i), style='filled', fillcolor='#1f77b4', shape='rarrow', rank='leftmost!')
 
 		for i in range(self.i_end, len(self.nodes)):
-			dot.node(str(self.nodes[i]), '')
+			dot.node(str(self.nodes[i]), '', style='filled', fillcolor='#2ca02c')
 
 		for node in self.nodes:
 			for i in range(len(node.adjacents)):
@@ -345,6 +347,12 @@ class Neuralnet:
 
 		if self.fitness_func == None:
 			print('ERROR: fitness_func of model ', self.name, ' is None.')
+			return
+
+		test_fitness = self.fitness_func()
+		accepted_types = [int, float, np.int64, np.float64]
+		if type(test_fitness) not in accepted_types:
+			print('ERROR: fitness_func of of type ', type(test_fitness), ' of model ', self.name, ' is not in ', accepted_types)
 			return
 
 		if plot:
@@ -436,7 +444,7 @@ class Neuralnet:
 			}
 
 		file_ = open(cwd + name + '.json', 'w')
-		json.dump(w_dict, file_, indent=4, separators=(',', ': '), sort_keys=True)
+		json.dump(w_dict, file_, indent=4, sort_keys=True)
 		file_.close()
 
 	# load model from a json.
@@ -495,7 +503,7 @@ def demo():
 	# load the model (we already have a json dump. after each good mutation,
 	# the model will be dumped into a json).
 	# this step is not neccesary.
-	#nn.load(nn.name)
+	nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
 	inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]

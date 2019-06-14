@@ -6,13 +6,15 @@ A python module that implements neural networks capable of applying NEAT.
 - numpy
 - graphviz
 - matplotlib
+- ujson
 
 #### software dependencies
 - graphviz
 
 #### what to expect of pyneat
 - easily generate arbitrary neural networks made for reinforcement learning
-- easily save and load models using json
+- easily save and load models using json dumps
+- 
 
 #### usage
 ```python
@@ -45,8 +47,8 @@ def fitness(): return -pn.MSE(nn, inputs, outputs)
 # mount the fitness function onto the model.
 nn.fitness_func = fitness
 
-# train the model and show plots.
-nn.train(10000, plot=True)
+# train the model and show the plots.
+nn.train(1000, plot=True)
 
 # use the model.
 print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))

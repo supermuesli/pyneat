@@ -1,69 +1,57 @@
 {
-    "fitness": -2.4137615392023255,
-    "node_0": {
-        "adjacents": [
-            1,
-            6
+    "fitness":-2.3762540896,
+    "node_0":{
+        "adjacents":[
+
         ],
-        "reset_rate": 0,
-        "weights": [
-            0.07288815966503592,
-            -0.19726899596621572
+        "reset_rate":0,
+        "weights":[
+
         ]
     },
-    "node_1": {
-        "adjacents": [
-            6
+    "node_1":{
+        "adjacents":[
+            
         ],
-        "reset_rate": 0,
-        "weights": [
-            -0.4566442665894054
+        "reset_rate":0,
+        "weights":[
+            
         ]
     },
-    "node_2": {
-        "adjacents": [
-            7
+    "node_2":{
+        "adjacents":[
+            
         ],
-        "reset_rate": 0,
-        "weights": [
-            0.9566116774490379
+        "reset_rate":0,
+        "weights":[
+            
         ]
     },
-    "node_3": {
-        "adjacents": [
-            2
+    "node_3":{
+        "adjacents":[
+            
         ],
-        "reset_rate": 0,
-        "weights": [
-            0.051476739017236484
+        "reset_rate":0,
+        "weights":[
+            
         ]
     },
-    "node_4": {
-        "adjacents": [],
-        "reset_rate": 0,
-        "weights": []
-    },
-    "node_5": {
-        "adjacents": [],
-        "reset_rate": 0,
-        "weights": []
-    },
-    "node_6": {
-        "adjacents": [
-            3
+    "node_4":{
+        "adjacents":[
+            
         ],
-        "reset_rate": 0,
-        "weights": [
-            -0.8575854389602128
+        "reset_rate":0,
+        "weights":[
+            
         ]
     },
-    "node_7": {
-        "adjacents": [
-            0
+    "node_5":{
+        "adjacents":[
+            
         ],
-        "reset_rate": 0,
-        "weights": [
-            -0.10716556542634337
+        "reset_rate":0,
+        "weights":[
+            
         ]
     }
 }
