@@ -13,22 +13,24 @@ A python module that implements neural networks capable of applying NEAT.
 ```python
 # this demo implements a neural network that learns a dataset by applying NEAT.
 
-# a neuralnet with 2 input_nodes, 2 hidden_nodes, 1 output_node,
-# an initial activation function for all nodes
-# name 'docs/addition' (defaults to 'timestamp').
-nn = Neuralnet([2, 1], pn.linear, 'docs/addition')
+import pyneat as pn
 
-# set mutationrate to 10% (defaults to 5%),
-nn.mutation_rate = 0.1
+# a neuralnet with 5 input_nodes and 1 output_node.
+# short_term_memory=False disables recurrent flow in the network.
+# set the name to 'docs/xor' (defaults to 'timestamp').
+nn = pn.Neuralnet(5, 1, short_term_memory=False, name='docs/xor')
+
+# set mutationrate to 1% (defaults to 5%),
+nn.mutation_rate = 0.01
 
 # load its weights (we already have a json dump. after each good mutation,
 # the weights will be dumped into a json).
 # this step is not neccesary.
-nn.load(nn.name)
+#nn.load(nn.name)
 
-# a dataset. this one yields basic addition.
-inputs = [[1,1], [2,2], [3,3], [4,4], [5,5], [1,0], [0.5,0.5], [10,100], [100,10]]
-outputs = [[2], [4], [6], [8], [10], [1], [1], [110], [110]]
+# a dataset. this one yields XOR.
+inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]
+outputs = [[0], [1], [1], [1], [0], [0], [1], [0], [0]]
 
 # define a fitness function to train with.
 # any positively growing function with respect to
@@ -38,9 +40,9 @@ def fitness(): return -pn.MSE(nn, inputs, outputs)
 # mount the fitness function onto the model.
 nn.fitness_func = fitness
 
-# train the model.
-nn.train(1000)
+# train the model and show plots.
+nn.train(10000, plot=True)
 
 # use the model.
-print('15 + 5 = ', nn.forward([15, 5]))
+print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))
 ```
