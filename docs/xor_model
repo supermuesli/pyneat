@@ -1,0 +1,19 @@
+// docs/xor
+digraph {
+	graph [rankdir=LR]
+	<__main__.Node object at 0x7f2b3925a0f0> [label=output_0 shape=star]
+	<__main__.Node object at 0x7f2b3925a160> [label=input_1 shape=rarrow]
+	<__main__.Node object at 0x7f2b3925a198> [label=input_2 shape=rarrow]
+	<__main__.Node object at 0x7f2b3925a1d0> [label=input_3 shape=rarrow]
+	<__main__.Node object at 0x7f2b3925a208> [label=input_4 shape=rarrow]
+	<__main__.Node object at 0x7f2b3925a240> [label=input_5 shape=rarrow]
+	<__main__.Node object at 0x7f2b3925a278> [label=""]
+	<__main__.Node object at 0x7f2b3925a2b0> [label=""]
+	<__main__.Node object at 0x7f2b3925a0f0> -> <__main__.Node object at 0x7f2b3925a160> [label=0.07]
+	<__main__.Node object at 0x7f2b3925a0f0> -> <__main__.Node object at 0x7f2b3925a278> [label=-0.2]
+	<__main__.Node object at 0x7f2b3925a160> -> <__main__.Node object at 0x7f2b3925a278> [label=-0.46]
+	<__main__.Node object at 0x7f2b3925a198> -> <__main__.Node object at 0x7f2b3925a2b0> [label=0.96]
+	<__main__.Node object at 0x7f2b3925a1d0> -> <__main__.Node object at 0x7f2b3925a198> [label=0.05]
+	<__main__.Node object at 0x7f2b3925a278> -> <__main__.Node object at 0x7f2b3925a1d0> [label=-0.86]
+	<__main__.Node object at 0x7f2b3925a2b0> -> <__main__.Node object at 0x7f2b3925a0f0> [label=-0.11]
+}

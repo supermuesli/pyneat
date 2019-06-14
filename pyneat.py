@@ -1,7 +1,7 @@
 from graphviz import Digraph
 import numpy as np
 import matplotlib.pyplot as plt
-import json, datetime, math, random, os, re, subprocess
+import json, datetime, math, random, os, webbrowser, re, subprocess
 
 # =============================================================================
 # misc
@@ -334,7 +334,8 @@ class Neuralnet:
 			for i in range(len(node.adjacents)):
 				dot.edge(str(node), str(node.adjacents[i]), label=str(round(node.weights[i], 2)))
 
-		dot.render(cwd+self.name, view=True)
+		dot.render(filename=cwd + self.name + '_model')
+		webbrowser.open('file://' + cwd + self.name + '_model.svg')
 
 	# train for n cycles and save the topology/weights if they improved after each cycle.
 	def train(self, cycles, plot=False):
@@ -392,7 +393,8 @@ class Neuralnet:
 			plt.ylabel('Fitness')
 			plt.axis([0, cycles, min(y_) - 10, max(y_) + 10])
 			plt.plot(x_, y_)
-			plt.show()
+			plt.savefig(cwd+self.name+'_fitness.svg')
+			webbrowser.open('file://' + cwd + self.name + '_fitness.svg')
 
 		print('fitness: ', self.fitness)
 
@@ -493,7 +495,7 @@ def demo():
 	# load the model (we already have a json dump. after each good mutation,
 	# the model will be dumped into a json).
 	# this step is not neccesary.
-	nn.load(nn.name)
+	#nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
 	inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]

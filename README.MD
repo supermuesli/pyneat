@@ -2,7 +2,7 @@
 
 A python module that implements neural networks capable of applying NEAT.
 
-#### python3 dependencies
+#### python 3.7.1+ dependencies
 - numpy
 - graphviz
 - matplotlib

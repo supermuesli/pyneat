@@ -1,104 +1,69 @@
 {
-    "fitness": -2.1590439305999745,
+    "fitness": -2.4137615392023255,
     "node_0": {
         "adjacents": [
-            9
+            1,
+            6
         ],
         "reset_rate": 0,
         "weights": [
-            -0.3480572886986353
+            0.07288815966503592,
+            -0.19726899596621572
         ]
     },
     "node_1": {
-        "adjacents": [],
-        "reset_rate": 0,
-        "weights": []
-    },
-    "node_10": {
         "adjacents": [
             6
         ],
         "reset_rate": 0,
         "weights": [
-            -0.7992730770585111
+            -0.4566442665894054
         ]
     },
     "node_2": {
-        "adjacents": [],
+        "adjacents": [
+            7
+        ],
         "reset_rate": 0,
-        "weights": []
+        "weights": [
+            0.9566116774490379
+        ]
     },
     "node_3": {
-        "adjacents": [
-            0,
-            4,
-            6
-        ],
-        "reset_rate": 0,
-        "weights": [
-            0.1757760918406126,
-            -0.1673447165878047,
-            -0.15287377910023126
-        ]
-    },
-    "node_4": {
-        "adjacents": [
-            1,
-            10
-        ],
-        "reset_rate": 0,
-        "weights": [
-            -0.5995699657575484,
-            0.8528913313570163
-        ]
-    },
-    "node_5": {
-        "adjacents": [
-            0
-        ],
-        "reset_rate": 0,
-        "weights": [
-            -0.3603565207482803
-        ]
-    },
-    "node_6": {
         "adjacents": [
             2
         ],
         "reset_rate": 0,
         "weights": [
-            0.7507863407419245
+            0.051476739017236484
         ]
     },
-    "node_7": {
-        "adjacents": [
-            8,
-            9
-        ],
+    "node_4": {
+        "adjacents": [],
         "reset_rate": 0,
-        "weights": [
-            0.6056339486090019,
-            0.3824344230950909
-        ]
+        "weights": []
     },
-    "node_8": {
+    "node_5": {
+        "adjacents": [],
+        "reset_rate": 0,
+        "weights": []
+    },
+    "node_6": {
         "adjacents": [
-            2,
             3
         ],
         "reset_rate": 0,
         "weights": [
-            0.4025626804062893,
-            -0.21649544546753663
+            -0.8575854389602128
         ]
     },
-    "node_9": {
+    "node_7": {
         "adjacents": [
-            1
+            0
         ],
         "reset_rate": 0,
         "weights": [
-            0.5651554898275358
+            -0.10716556542634337
         ]
     }
 }
