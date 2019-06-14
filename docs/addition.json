@@ -1,10 +1,26 @@
 {
-    "fitness": -90.86400251255294,
-    "layer_0_node_0": [
-        0.15403133031426408
-    ],
-    "layer_0_node_1": [
-        0.8834386341791314
-    ],
-    "layer_1_node_0": []
+    "fitness": -2658.61308769472,
+    "node_0": {
+        "adjacents": [
+            1
+        ],
+        "reset_rate": 0,
+        "weights": [
+            -0.5531966170571196
+        ]
+    },
+    "node_1": {
+        "adjacents": [
+            0
+        ],
+        "reset_rate": 0,
+        "weights": [
+            0.3956563278699079
+        ]
+    },
+    "node_2": {
+        "adjacents": [],
+        "reset_rate": 0,
+        "weights": []
+    }
 }
