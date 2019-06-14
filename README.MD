@@ -28,10 +28,10 @@ nn = pn.Neuralnet(5, 1, short_term_memory=False, name='docs/xor')
 # set mutationrate to 1% (defaults to 5%),
 nn.mutation_rate = 0.01
 
-# load its weights (we already have a json dump. after each good mutation,
-# the weights will be dumped into a json).
+# load the model (we already have a json dump. after each good mutation,
+# the model will be dumped into a json).
 # this step is not neccesary.
-#nn.load(nn.name)
+nn.load(nn.name)
 
 # a dataset. this one yields XOR.
 inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]
