@@ -278,45 +278,48 @@ class Neuralnet:
 		return res
 
 	def mutate(self):
+		mutations = ['add_node', 'add_edge', 'weights', 'reset_rates']
+		mutation_choice = mutations[int(next_float()*len(mutations))]
+
 		# =====================================================================
 		# mutate topology
 		# =====================================================================
 		
 		# add new node
-		if next_float() < self.mutation_rate:
+		if mutation_choice == 'add_node':
 			from_to = [self.nodes[int(next_float()*len(self.nodes))] for i in range(2)]
 			new_node = Node([from_to[1]], [1])
 			if from_to[0].adjacents != []:
 				self.nodes += [new_node]
 				from_to[0].adjacents = from_to[0].adjacents[:-1] + [new_node]
+			return
 
 		# add new edge
-		if next_float() < self.mutation_rate:
+		if mutation_choice == 'add_edge':
 			from_to = [self.nodes[int(next_float()*len(self.nodes))] for i in range(2)]
 			if from_to[1] not in from_to[0].adjacents: 
 				from_to[0].adjacents += [from_to[1]]
 				from_to[0].weights += [next_neg_float()]
+			return
 
 		# =====================================================================
 		# mutate weights and reset_rates
 		# =====================================================================
 
-		if self.short_term_memory:
+		if mutation_choice == 'weights':
 			for node in self.nodes:
 				# mutate weights
 				for i in range(len(node.weights)):
 					if next_float() < self.mutation_rate:
 						node.weights[i] = next_neg_float()
-				
-				# mutate reset_rate
+			return
+
+		if mutation_choice == 'reset_rate':	
+			# mutate reset_rate
+			for node in self.nodes:
 				if next_float() < self.mutation_rate:
 					node.reset_rate = next_float()
-		else:
-			for node in self.nodes:
-				# mutate weights
-				for i in range(len(node.weights)):
-					if next_float() < self.mutation_rate:
-						node.weights[i] = next_neg_float()
+			return
 			
 	# create a visual graph of the neuralnet and open it
 	def show(self):
@@ -369,6 +372,9 @@ class Neuralnet:
 					self.fitness = fitness		
 					self.prev_nodes = self.nodes
 					self.save(self.name)		
+
+					# show neuralnet in browser
+					self.show()
 				else:
 					# bad mutation. revert.
 					self.nodes = self.prev_nodes
@@ -393,15 +399,15 @@ class Neuralnet:
 		self.load(self.name)
 
 		if plot:
-			# show neuralnet		
-			self.show()
-
 			# plot fitness development
+			plt.clf()
 			plt.xlabel('Training cycle')
 			plt.ylabel('Fitness')
 			plt.axis([0, cycles, min(y_) - 10, max(y_) + 10])
 			plt.plot(x_, y_)
 			plt.savefig(cwd+self.name+'_fitness.svg')
+
+			# show fitness plot in browser
 			webbrowser.open('file://' + cwd + self.name + '_fitness.svg')
 
 		print('fitness: ', self.fitness)
@@ -503,7 +509,7 @@ def demo():
 	# load the model (we already have a json dump. after each good mutation,
 	# the model will be dumped into a json).
 	# this step is not neccesary.
-	nn.load(nn.name)
+	# nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
 	inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]
