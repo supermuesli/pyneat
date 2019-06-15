@@ -24,8 +24,8 @@ import pyneat as pn
 
 # a neuralnet with 3 input_nodes and 1 output_node.
 # short_term_memory=False disables recurrent flow in the network.
-# set the name to 'docs/xor' (defaults to 'timestamp').
 # set mutationrate to 20% (defaults to 5%),
+# set the name to 'docs/xor' (defaults to 'timestamp').
 nn = pn.Neuralnet(3, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
 
 # load the model (we already have a json dump. after each good mutation,
