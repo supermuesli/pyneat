@@ -50,7 +50,7 @@ nn.fitness_func = fitness
 nn.train(100, plot=True, show=True)
 
 # use the model.
-print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))
+print('0 xor 0 xor 1 <=> ', nn.forward([0,0,1]))
 ```
 
 #### showcase

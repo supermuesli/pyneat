@@ -1,0 +1,7 @@
+// docs/2xor
+digraph {
+	graph [rankdir=LR]
+	<pyneat.Node object at 0x7f930ebbec50> [label=output_0 fillcolor="#d62728" group=output rank=sink shape=rarrow style=filled]
+	<pyneat.Node object at 0x7f930ebbecc0> [label=input_1 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
+	<pyneat.Node object at 0x7f930ebed080> [label=input_2 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
+}

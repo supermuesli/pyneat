@@ -520,15 +520,15 @@ def demo():
 	# short_term_memory=False disables recurrent flow in the network.
 	# set the name to 'docs/xor' (defaults to 'timestamp').
 	# set mutationrate to 20% (defaults to 5%),
-	nn = Neuralnet(3, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
+	nn = Neuralnet(2, 1, mutation_rate=0.2, short_term_memory=False, name='docs/2xor')
 
 	# load the model (we already have a json dump. after each good mutation,
 	# the model will be dumped into a json). this step is not neccesary.
 	nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
-	inputs = [[1,1,0], [1,0,0], [0,0,1], [0,0,0], [0,0,1], [0,1,0], [1,1,1]]
-	outputs = [[0], [1], [1], [0], [1], [1], [0]]
+	inputs = [[1,1], [1,0], [0,1], [0,0]]
+	outputs = [[0], [1], [1], [0]]
 
 	# define a fitness function to train with.
 	# any positively growing function with respect to
@@ -542,7 +542,7 @@ def demo():
 	nn.train(100, plot=True, show=True)
 
 	# use the model.
-	print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))
+	print('0 xor 1 <=> ', nn.forward([0,1]))
 
 
 # =============================================================================

@@ -1,0 +1,30 @@
+{
+    "fitness":-0.25,
+    "node_0":{
+        "adjacents":[
+
+        ],
+        "reset_rate":0,
+        "weights":[
+
+        ]
+    },
+    "node_1":{
+        "adjacents":[
+
+        ],
+        "reset_rate":0,
+        "weights":[
+
+        ]
+    },
+    "node_2":{
+        "adjacents":[
+
+        ],
+        "reset_rate":0,
+        "weights":[
+
+        ]
+    }
+}
