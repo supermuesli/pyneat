@@ -1,3 +1,4 @@
+from copy import deepcopy
 from graphviz import Digraph
 import numpy as np
 import matplotlib.pyplot as plt
@@ -222,29 +223,25 @@ class Node:
 		self.value *= self.reset_rate
 			
 class Neuralnet:
-	def __init__(self, input_layer_size, output_layer_size, short_term_memory=False, name=''):
+	def __init__(self, input_layer_size, output_layer_size, mutation_rate=0.05, short_term_memory=False, name=''):
 		# use the name for convenient loading/saving of entire neuralnets
 		self.name = name
 
 		# all existing nodes
 		self.nodes = [Node([], []) for i in range(output_layer_size + input_layer_size)]
 
-		# never add adjacent nodes onto output nodes. other mutations are fine.
 		# to specificly target input and output nodes we introduce indices.
 		self.o_start = 0
 		self.o_end   = output_layer_size
 		self.i_start = output_layer_size
 		self.i_end   = output_layer_size+input_layer_size
 		
-		# use this to undo a bad mutation.
-		self.prev_nodes = self.nodes
-		
 		# use these to determine good/bad mutations.
 		self.fitness = -math.inf
 		self.fitness_func = None
 
 		# number in range [0, 1]. probability of arbitrary mutation.
-		self.mutation_rate = 0.05
+		self.mutation_rate = mutation_rate
 
 		# basically enables recurrent flow if True.
 		self.short_term_memory = short_term_memory
@@ -278,48 +275,61 @@ class Neuralnet:
 		return res
 
 	def mutate(self):
-		mutations = ['add_node', 'add_edge', 'weights', 'reset_rates']
+		mutations = ['add_node', 'add_edge', 'weights']
+		if self.short_term_memory:
+			mutations += ['reset_rates']
 		mutation_choice = mutations[int(next_float()*len(mutations))]
-
 		# =====================================================================
 		# mutate topology
 		# =====================================================================
 		
-		# add new node
 		if mutation_choice == 'add_node':
-			from_to = [self.nodes[int(next_float()*len(self.nodes))] for i in range(2)]
-			new_node = Node([from_to[1]], [1])
-			if from_to[0].adjacents != []:
-				self.nodes += [new_node]
-				from_to[0].adjacents = from_to[0].adjacents[:-1] + [new_node]
-			return
+			from_to_indices = [int(next_float()*len(self.nodes)) for i in range(2)]
 
-		# add new edge
-		if mutation_choice == 'add_edge':
-			from_to = [self.nodes[int(next_float()*len(self.nodes))] for i in range(2)]
-			if from_to[1] not in from_to[0].adjacents: 
+			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not self.short_term_memory):
+				return 'no_mutation'
+
+			from_to = [self.nodes[index] for index in from_to_indices]
+			new_node = Node([from_to[1]], [1.0])
+			self.nodes += [new_node]
+			if new_node not in from_to[0].adjacents:
+				from_to[0].adjacents += [new_node]
+				from_to[0].weights += [next_neg_float()]
+				return mutation_choice
+			else:
+				return 'no_mutation'
+
+		elif mutation_choice == 'add_edge':
+			from_to_indices = [int(next_float()*len(self.nodes)) for i in range(2)]
+
+			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not self.short_term_memory):
+				return 'no_mutation'
+
+			from_to = [self.nodes[index] for index in from_to_indices]
+			if from_to[1] not in from_to[0].adjacents:
 				from_to[0].adjacents += [from_to[1]]
 				from_to[0].weights += [next_neg_float()]
-			return
-
+				return mutation_choice
+			else:
+				return 'no mutation'
 		# =====================================================================
 		# mutate weights and reset_rates
 		# =====================================================================
 
-		if mutation_choice == 'weights':
+		elif mutation_choice == 'weights':
 			for node in self.nodes:
 				# mutate weights
 				for i in range(len(node.weights)):
 					if next_float() < self.mutation_rate:
 						node.weights[i] = next_neg_float()
-			return
+			return mutation_choice
 
-		if mutation_choice == 'reset_rate':	
+		elif mutation_choice == 'reset_rates':	
 			# mutate reset_rate
 			for node in self.nodes:
 				if next_float() < self.mutation_rate:
 					node.reset_rate = next_float()
-			return
+			return mutation_choice
 			
 	# create a visual graph of the neuralnet and open it
 	def show(self):
@@ -327,23 +337,25 @@ class Neuralnet:
 		dot.format = 'svg'
 
 		for i in range(self.o_start, self.o_end):
-			dot.node(str(self.nodes[i]), 'output_'+str(i), style='filled', fillcolor='#d62728', shape='rarrow', rank='rightmost!')
+			dot.node(str(self.nodes[i]), 'output_'+str(i), group='output', style='filled', fillcolor='#d62728', shape='rarrow', rank='sink')
 
 		for i in range(self.i_start, self.i_end):
-			dot.node(str(self.nodes[i]), 'input_'+str(i), style='filled', fillcolor='#1f77b4', shape='rarrow', rank='leftmost!')
+			dot.node(str(self.nodes[i]), 'input_'+str(i), group='input', style='filled', fillcolor='#1f77b4', shape='rarrow', rank='source')
 
 		for i in range(self.i_end, len(self.nodes)):
-			dot.node(str(self.nodes[i]), '', style='filled', fillcolor='#2ca02c')
+			dot.node(str(self.nodes[i]), '', group='hidden', style='filled', fillcolor='#2ca02c', rank='same')
 
 		for node in self.nodes:
 			for i in range(len(node.adjacents)):
-				dot.edge(str(node), str(node.adjacents[i]), label=str(round(node.weights[i], 2)))
+				dot.edge(str(node), str(node.adjacents[i]), label=str(round(node.weights[i], 6)))
 
 		dot.render(filename=cwd + self.name + '_model')
-		webbrowser.open('file://' + cwd + self.name + '_model.svg')
+		# TODO: refresh tab instead of opening new one each time.
+		# https://stackoverflow.com/questions/16399355/refresh-a-local-web-page-using-python
+		webbrowser.open('file://' + cwd + self.name + '_model.svg', new=0)
 
 	# train for n cycles and save the topology/weights if they improved after each cycle.
-	def train(self, cycles, plot=False):
+	def train(self, cycles, plot=False, show=False):
 		if cycles <= 0:
 			print('ERROR: training cycles <= 0.')
 			return
@@ -355,14 +367,18 @@ class Neuralnet:
 		test_fitness = self.fitness_func()
 		accepted_types = [int, float, np.int64, np.float64]
 		if type(test_fitness) not in accepted_types:
-			print('ERROR: fitness_func of of type ', type(test_fitness), ' of model ', self.name, ' is not in ', accepted_types)
+			print('ERROR: fitness_func of return-type ', type(test_fitness), ' of model ', self.name, ' is not in ', accepted_types)
+			print('Either expand the accepted-types-list or fix your return-type.')
 			return
 
-		if plot:
-			# used for plotting at the end
-			x_ = [i for i in range(1, cycles+1)]
-			y_ = []
+		# fucking hell.
+		# https://stackoverflow.com/questions/19210971/python-prevent-copying-object-as-reference
+		prev_nodes = deepcopy(self.nodes)
 
+		if plot:
+			# used for fitness plotting at the end
+			cycles_ = [i for i in range(1, cycles+1)]
+			fitnesses_ = []
 			for n in range(cycles):
 				self.mutate()
 				fitness = self.fitness_func()
@@ -370,16 +386,17 @@ class Neuralnet:
 				if fitness > self.fitness:
 					# good mutation. keep it.
 					self.fitness = fitness		
-					self.prev_nodes = self.nodes
-					self.save(self.name)		
+					prev_nodes = deepcopy(self.nodes)
+					self.save(self.name)
 
-					# show neuralnet in browser
-					self.show()
+					if show:
+						# show neuralnet in browser
+						self.show()
 				else:
 					# bad mutation. revert.
-					self.nodes = self.prev_nodes
-
-				y_ += [self.fitness]
+					self.nodes = deepcopy(prev_nodes)
+					
+				fitnesses_ += [self.fitness]
 		else:
 			for n in range(cycles):
 				self.mutate()
@@ -388,23 +405,25 @@ class Neuralnet:
 				if fitness > self.fitness:
 					# good mutation. keep it.
 					self.fitness = fitness		
-					self.prev_nodes = self.nodes
-					self.save(self.name)		
+					prev_nodes = deepcopy(self.nodes)
+					self.save(self.name)
+
+					if show:
+						# show neuralnet in browser
+						self.show()
 				else:
 					# bad mutation. revert.
-					self.nodes = self.prev_nodes
-
-		# i don't know what's wrong with the training-loop
-		# but somehow i have to reload the weights
-		self.load(self.name)
-
+					self.nodes = deepcopy(prev_nodes)
+					
 		if plot:
 			# plot fitness development
 			plt.clf()
-			plt.xlabel('Training cycle')
-			plt.ylabel('Fitness')
-			plt.axis([0, cycles, min(y_) - 10, max(y_) + 10])
-			plt.plot(x_, y_)
+			plt.figure(figsize=(10, 5))
+			plt.xlabel('Training cycle', size=20)
+			plt.ylabel('Fitness', size=20)
+			plt.axis([0, cycles, min(fitnesses_) - 10, max(fitnesses_) + 10], size=15)
+			plt.plot(cycles_, fitnesses_, color='red', linewidth=3)
+			plt.grid()
 			plt.savefig(cwd+self.name+'_fitness.svg')
 
 			# show fitness plot in browser
@@ -423,7 +442,7 @@ class Neuralnet:
 		w_dict['fitness'] = self.fitness
 
 		# you can't dump memory adresses into a json, so assign 
-		# an ID to each node. putput and input nodes are going
+		# an ID to each node. output and input nodes are going
 		# to be retrieved by using the initial_layer_sizes 
 		# provided at the declaration of the neuralnet. this
 		# works because output and input nodes are the first
@@ -484,7 +503,6 @@ class Neuralnet:
 						node.adjacents[j] = adresses[key]
 
 		self.fitness = w_dict['fitness']
-		self.prev_nodes = self.nodes
 
 # =============================================================================
 # demo
@@ -501,30 +519,27 @@ def demo():
 	# a neuralnet with 5 input_nodes and 1 output_node.
 	# short_term_memory=False disables recurrent flow in the network.
 	# set the name to 'docs/xor' (defaults to 'timestamp').
-	nn = Neuralnet(5, 1, short_term_memory=False, name='docs/xor')
-	
-	# set mutationrate to 1% (defaults to 5%),
-	nn.mutation_rate = 0.01
+	# set mutationrate to 20% (defaults to 5%),
+	nn = Neuralnet(3, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
 
 	# load the model (we already have a json dump. after each good mutation,
-	# the model will be dumped into a json).
-	# this step is not neccesary.
-	# nn.load(nn.name)
+	# the model will be dumped into a json). this step is not neccesary.
+	nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
-	inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]
-	outputs = [[0], [1], [1], [1], [0], [0], [1], [0], [0]]
+	inputs = [[1,1,0], [1,0,0], [0,0,1], [0,0,0], [0,0,1], [0,1,0], [1,1,1]]
+	outputs = [[0], [1], [1], [0], [1], [1], [0]]
 
 	# define a fitness function to train with.
 	# any positively growing function with respect to
 	# positively counting attributes will suffice.
-	def fitness(): return -10*MSE(nn, inputs, outputs)
+	def fitness(): return 1000 - MSE(nn, inputs, outputs)
 
 	# mount the fitness function onto the model.
 	nn.fitness_func = fitness
 
-	# train the model and show plots.
-	nn.train(1000, plot=True)
+	# train the model, plot the fitness and show the topology.
+	nn.train(100, plot=True, show=True)
 
 	# use the model.
 	print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))
