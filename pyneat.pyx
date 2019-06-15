@@ -533,7 +533,7 @@ def demo():
 	# define a fitness function to train with.
 	# any positively growing function with respect to
 	# positively counting attributes will suffice.
-	def fitness(): return 1000 - MSE(nn, inputs, outputs)
+	def fitness(): return - MSE(nn, inputs, outputs)
 
 	# mount the fitness function onto the model.
 	nn.fitness_func = fitness
