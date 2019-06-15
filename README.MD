@@ -24,22 +24,23 @@ import pyneat as pn
 
 # this demo implements a neural network that learns a dataset by applying NEAT.
 
-# define a neuralnet with 5 input_nodes and 1 output_node.
+# a neuralnet with 5 input_nodes and 1 output_node.
+# short_term_memory=False disables recurrent flow in the network.
+# set the name to 'docs/xor' (defaults to 'timestamp').
 # set mutationrate to 20% (defaults to 5%),
-# setting short_term_memory=False disables recurrent flow in the network.
-# set the name to 'docs/xor' (defaults to current date-timestamp).
-nn = pn.Neuralnet(5, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
+nn = pn.Neuralnet(3, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
 
 # load the model (we already have a json dump. after each good mutation,
 # the model will be dumped into a json). this step is not neccesary.
-#nn.load(nn.name)
+nn.load(nn.name)
 
 # a dataset. this one yields XOR.
-inputs = [[1,1,0,0,0], [1,0,0,0,0], [0,0,1,0,0], [0,0,0,0,1], [1,0,0,0,1], [0,0,0,1,1], [0,1,0,0,0], [1,1,1,1,1], [1,0,0,1,0]]
-outputs = [[0], [1], [1], [1], [0], [0], [1], [0], [0]]
+inputs = [[1,1,0], [1,0,0], [0,0,1], [0,0,0], [0,0,1], [0,1,0], [1,1,1]]
+outputs = [[0], [1], [1], [0], [1], [1], [0]]
 
-# define a fitness function to train with. any positively growing 
-# function with respect to positively counting attributes will suffice.
+# define a fitness function to train with.
+# any positively growing function with respect to
+# positively counting attributes will suffice.
 def fitness(): return -pn.MSE(nn, inputs, outputs)
 
 # mount the fitness function onto the model.
