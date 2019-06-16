@@ -246,6 +246,9 @@ class Neuralnet:
 		# basically enables recurrent flow if True.
 		self.short_term_memory = short_term_memory
 
+		# for optimizing the mutate function a little
+		self.has_adjacents = False
+
 	# resets all node values based on their reset_rates.
 	def reset(self):
 		for node in self.nodes:
@@ -275,10 +278,14 @@ class Neuralnet:
 		return res
 
 	def mutate(self):
-		mutations = ['add_node', 'add_edge', 'weights']
-		if self.short_term_memory:
-			mutations += ['reset_rates']
-		mutation_choice = mutations[int(next_float()*len(mutations))]
+		if self.has_adjacents:
+			mutations = ['add_node', 'add_edge', 'weights']
+			if self.short_term_memory:
+				mutations += ['reset_rates']
+			mutation_choice = mutations[int(next_float()*len(mutations))]
+		else:
+			mutation_choice = 'add_edge'
+
 		# =====================================================================
 		# mutate topology
 		# =====================================================================
@@ -309,9 +316,10 @@ class Neuralnet:
 			if from_to[1] not in from_to[0].adjacents:
 				from_to[0].adjacents += [from_to[1]]
 				from_to[0].weights += [next_neg_float()]
+				self.has_adjacents = True
 				return mutation_choice
 			else:
-				return 'no mutation'
+				return 'no_mutation'
 		# =====================================================================
 		# mutate weights and reset_rates
 		# =====================================================================
@@ -380,7 +388,9 @@ class Neuralnet:
 			cycles_ = [i for i in range(1, cycles+1)]
 			fitnesses_ = []
 			for n in range(cycles):
-				self.mutate()
+				if self.mutate() == 'no_mutation':
+					cycles_ = cycles_[:-1]
+					continue
 				fitness = self.fitness_func()
 
 				if fitness > self.fitness:
@@ -399,7 +409,8 @@ class Neuralnet:
 				fitnesses_ += [self.fitness]
 		else:
 			for n in range(cycles):
-				self.mutate()
+				if self.mutate() == 'no_mutation':
+					continue
 				fitness = self.fitness_func()
 
 				if fitness > self.fitness:
@@ -415,7 +426,7 @@ class Neuralnet:
 					# bad mutation. revert.
 					self.nodes = deepcopy(prev_nodes)
 					
-		if plot:
+		if plot and fitnesses_ != []:
 			# plot fitness development
 			plt.clf()
 			plt.figure(figsize=(10, 5))
