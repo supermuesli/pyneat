@@ -202,6 +202,7 @@ class Node:
 		self.adjacents = adjacents
 		self.weights = weights
 		self.value = 0
+		self.activation_func = sigmoid
 
 		# number in range [0, 1]. percentage of a nodes value that will remain 
 		# when the neuralnet is reset (initially 0). this will sort of mimic 
@@ -223,7 +224,10 @@ class Node:
 		self.value *= self.reset_rate
 			
 class Neuralnet:
-	def __init__(self, input_layer_size, output_layer_size, mutation_rate=0.05, short_term_memory=False, name=''):
+	def __init__(self, input_layer_size, output_layer_size, mutation_rate=0.05, short_term_memory=False, recurrent_flow=False, decision_only=True, name=''):
+		self.input_layer_size = input_layer_size
+		self.output_layer_size = output_layer_size
+
 		# use the name for convenient loading/saving of entire neuralnets
 		self.name = name
 
@@ -243,8 +247,17 @@ class Neuralnet:
 		# number in range [0, 1]. probability of arbitrary mutation.
 		self.mutation_rate = mutation_rate
 
-		# basically enables recurrent flow if True.
+		# enables short-term-memory of nodes if True
 		self.short_term_memory = short_term_memory
+
+		# enables recurrent flow if True.
+		self.recurrent_flow = recurrent_flow
+
+		# only allows for decision-activation-functions to be used
+		self.decision_only = decision_only
+
+		# for optimizing the mutate function a little
+		self.has_adjacents = False
 
 	# resets all node values based on their reset_rates.
 	def reset(self):
@@ -264,7 +277,7 @@ class Neuralnet:
 
 		# apply acitvation function per node
 		for node in self.nodes:
-			node.value = sigmoid(node.value)
+			node.value = node.activation_func(node.value)
 
 		# saves values of last layer
 		res = [node.value for node in self.nodes[self.o_start:self.o_end]]
@@ -275,10 +288,18 @@ class Neuralnet:
 		return res
 
 	def mutate(self):
-		mutations = ['add_node', 'add_edge', 'weights']
-		if self.short_term_memory:
-			mutations += ['reset_rates']
-		mutation_choice = mutations[int(next_float()*len(mutations))]
+		if self.has_adjacents:
+			mutations = ['add_node', 'add_edge', 'weights']
+			if self.short_term_memory:
+				mutations += ['reset_rates']
+
+			if not self.decision_only:
+				mutations += ['activation_func']
+
+			mutation_choice = mutations[int(next_float()*len(mutations))]
+		else:
+			mutation_choice = 'add_edge'
+
 		# =====================================================================
 		# mutate topology
 		# =====================================================================
@@ -286,7 +307,7 @@ class Neuralnet:
 		if mutation_choice == 'add_node':
 			from_to_indices = [int(next_float()*len(self.nodes)) for i in range(2)]
 
-			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not self.short_term_memory):
+			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not (self.recurrent_flow or self.short_term_memory)):
 				return 'no_mutation'
 
 			from_to = [self.nodes[index] for index in from_to_indices]
@@ -302,18 +323,19 @@ class Neuralnet:
 		elif mutation_choice == 'add_edge':
 			from_to_indices = [int(next_float()*len(self.nodes)) for i in range(2)]
 
-			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not self.short_term_memory):
+			if ((from_to_indices[0] < self.o_end) or (self.o_end <= from_to_indices[1] < self.i_end)) and (not (self.recurrent_flow or self.short_term_memory)):
 				return 'no_mutation'
 
 			from_to = [self.nodes[index] for index in from_to_indices]
 			if from_to[1] not in from_to[0].adjacents:
 				from_to[0].adjacents += [from_to[1]]
 				from_to[0].weights += [next_neg_float()]
+				self.has_adjacents = True
 				return mutation_choice
 			else:
-				return 'no mutation'
+				return 'no_mutation'
 		# =====================================================================
-		# mutate weights and reset_rates
+		# mutate weights, reset_rates and activation_func
 		# =====================================================================
 
 		elif mutation_choice == 'weights':
@@ -329,6 +351,13 @@ class Neuralnet:
 			for node in self.nodes:
 				if next_float() < self.mutation_rate:
 					node.reset_rate = next_float()
+			return mutation_choice
+
+		elif mutation_choice == 'activation_func':
+			# mutate activation_func
+			for node in self.nodes:
+				if next_float() < self.mutation_rate:
+					node.activation_func = act_func_pool[next_float()*act_func_pool_len]
 			return mutation_choice
 			
 	# create a visual graph of the neuralnet and open it
@@ -380,10 +409,13 @@ class Neuralnet:
 			cycles_ = [i for i in range(1, cycles+1)]
 			fitnesses_ = []
 			for n in range(cycles):
-				self.mutate()
+				if self.mutate() == 'no_mutation':
+					cycles_ = cycles_[:-1]
+					continue
 				fitness = self.fitness_func()
 
-				if fitness > self.fitness:
+				# an improvement of at least 5% is required
+				if fitness > self.fitness * 0.95:
 					# good mutation. keep it.
 					self.fitness = fitness		
 					prev_nodes = deepcopy(self.nodes)
@@ -399,7 +431,8 @@ class Neuralnet:
 				fitnesses_ += [self.fitness]
 		else:
 			for n in range(cycles):
-				self.mutate()
+				if self.mutate() == 'no_mutation':
+					continue
 				fitness = self.fitness_func()
 
 				if fitness > self.fitness:
@@ -415,7 +448,7 @@ class Neuralnet:
 					# bad mutation. revert.
 					self.nodes = deepcopy(prev_nodes)
 					
-		if plot:
+		if plot and fitnesses_ != []:
 			# plot fitness development
 			plt.clf()
 			plt.figure(figsize=(10, 5))
@@ -462,10 +495,17 @@ class Neuralnet:
 					if adjacent == key:
 						adjacents_ += [node_ids[key]]
 
+			activation_func_str = 'sigmoid'
+			if str(self.fitness_func).split('function ')[1][:-1] == 'linear':
+				activation_func_str = 'linear'
+			elif str(self.fitness_func).split('function ')[1][:-1] == 'relu':
+				activation_func_str = 'relu'
+
 			w_dict['node_'+str(i)] = {
 				'adjacents': adjacents_, 
 				'weights': self.nodes[i].weights,
-				'reset_rate': self.nodes[i].reset_rate
+				'reset_rate': self.nodes[i].reset_rate,
+				'activation_func': activation_func_str
 			}
 
 		file_ = open(cwd + name + '.json', 'w')
@@ -488,6 +528,7 @@ class Neuralnet:
 				continue
 			new_node = Node(w_dict['node_'+str(i-1)]['adjacents'], w_dict['node_'+str(i-1)]['weights'])
 			new_node.reset_rate = w_dict['node_'+str(i-1)]['reset_rate']
+			new_node.activation_func = eval(w_dict['node_'+str(i-1)]['activation_func'])
 			self.nodes += [new_node]
 
 		# retrieve adresses
@@ -503,6 +544,12 @@ class Neuralnet:
 						node.adjacents[j] = adresses[key]
 
 		self.fitness = w_dict['fitness']
+
+	# reinitialize model while keeping the fitness_function.
+	def forget(self):
+		fitness_func_ = self.fitness_func
+		self.__init__(self.input_layer_size, self.output_layer_size, self.mutation_rate, self.short_term_memory, self.recurrent_flow, self.decision_only, self.name)
+		self.fitness_func = fitness_func_
 
 # =============================================================================
 # demo
@@ -520,30 +567,35 @@ def demo():
 	# short_term_memory=False disables recurrent flow in the network.
 	# set the name to 'docs/xor' (defaults to 'timestamp').
 	# set mutationrate to 20% (defaults to 5%),
-	nn = Neuralnet(3, 1, mutation_rate=0.2, short_term_memory=False, name='docs/xor')
+	nn = Neuralnet(2, 2, mutation_rate=0.2, short_term_memory=False, recurrent_flow=False, decision_only=True, name='docs/2xor')
 
 	# load the model (we already have a json dump. after each good mutation,
 	# the model will be dumped into a json). this step is not neccesary.
 	nn.load(nn.name)
 
 	# a dataset. this one yields XOR.
-	inputs = [[1,1,0], [1,0,0], [0,0,1], [0,0,0], [0,0,1], [0,1,0], [1,1,1]]
-	outputs = [[0], [1], [1], [0], [1], [1], [0]]
+	inputs = [[1,1], [1,0], [0,1], [0,0]]
+	outputs = [[0,1], [1,0], [1,0], [0,1]]
 
 	# define a fitness function to train with.
 	# any positively growing function with respect to
 	# positively counting attributes will suffice.
-	def fitness(): return - MSE(nn, inputs, outputs)
+	def fitness(): return -MSE(nn, inputs, outputs)
 
 	# mount the fitness function onto the model.
 	nn.fitness_func = fitness
 
-	# train the model, plot the fitness and show the topology.
-	nn.train(100, plot=True, show=True)
+	# train the model, plot the fitness and show the topology after each good mutation if show=True.
+	nn.train(1000, plot=True, show=False)
 
 	# use the model.
-	print('0 xor 0 xor 0 xor 1 xor 0 <=> ', nn.forward([0,0,0,1,0]))
+	print('0 xor 1 <=> ', nn.forward([0,1]))
 
+	# show the topology of the model
+	nn.show()
+
+	# if we want to retrain the model, we can make it forget its weights and topology
+	nn.forget()
 
 # =============================================================================
 # main

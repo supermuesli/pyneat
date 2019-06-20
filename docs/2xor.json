@@ -1,6 +1,7 @@
 {
-    "fitness":-0.25,
+    "fitness":-0.5000000001,
     "node_0":{
+        "activation_func":"sigmoid",
         "adjacents":[
 
         ],
@@ -10,6 +11,7 @@
         ]
     },
     "node_1":{
+        "activation_func":"sigmoid",
         "adjacents":[
 
         ],
@@ -19,12 +21,61 @@
         ]
     },
     "node_2":{
+        "activation_func":"sigmoid",
         "adjacents":[
 
         ],
         "reset_rate":0,
         "weights":[
 
+        ]
+    },
+    "node_3":{
+        "activation_func":"sigmoid",
+        "adjacents":[
+            6,
+            4,
+            5,
+            1
+        ],
+        "reset_rate":0,
+        "weights":[
+            0.0764717642,
+            -0.1468295337,
+            -0.0160603263,
+            -0.0062619711
+        ]
+    },
+    "node_4":{
+        "activation_func":"sigmoid",
+        "adjacents":[
+            6,
+            1
+        ],
+        "reset_rate":0,
+        "weights":[
+            0.1853786189,
+            0.1833446564
+        ]
+    },
+    "node_5":{
+        "activation_func":"sigmoid",
+        "adjacents":[
+            1
+        ],
+        "reset_rate":0,
+        "weights":[
+            1.0
+        ]
+    },
+    "node_6":{
+        "activation_func":"sigmoid",
+        "adjacents":[
+            1
+        ],
+        "reset_rate":0,
+        "weights":[
+            1.0
         ]
     }
 }

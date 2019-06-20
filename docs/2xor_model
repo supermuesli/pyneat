@@ -1,7 +1,19 @@
 // docs/2xor
 digraph {
 	graph [rankdir=LR]
-	<pyneat.Node object at 0x7f930ebbec50> [label=output_0 fillcolor="#d62728" group=output rank=sink shape=rarrow style=filled]
-	<pyneat.Node object at 0x7f930ebbecc0> [label=input_1 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
-	<pyneat.Node object at 0x7f930ebed080> [label=input_2 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
+	<pyneat.Node object at 0x7ffa2b7acc88> [label=output_0 fillcolor="#d62728" group=output rank=sink shape=rarrow style=filled]
+	<pyneat.Node object at 0x7ffa2b7ac390> [label=output_1 fillcolor="#d62728" group=output rank=sink shape=rarrow style=filled]
+	<pyneat.Node object at 0x7ffa2b7ac048> [label=input_2 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
+	<pyneat.Node object at 0x7ffa2b7acf60> [label=input_3 fillcolor="#1f77b4" group=input rank=source shape=rarrow style=filled]
+	<pyneat.Node object at 0x7ffa2b7acbe0> [label="" fillcolor="#2ca02c" group=hidden rank=same style=filled]
+	<pyneat.Node object at 0x7ffa2b7acd30> [label="" fillcolor="#2ca02c" group=hidden rank=same style=filled]
+	<pyneat.Node object at 0x7ffa2b7ac1d0> [label="" fillcolor="#2ca02c" group=hidden rank=same style=filled]
+	<pyneat.Node object at 0x7ffa2b7acf60> -> <pyneat.Node object at 0x7ffa2b7ac390> [label=0.076472]
+	<pyneat.Node object at 0x7ffa2b7acf60> -> <pyneat.Node object at 0x7ffa2b7acbe0> [label=-0.14683]
+	<pyneat.Node object at 0x7ffa2b7acf60> -> <pyneat.Node object at 0x7ffa2b7acd30> [label=-0.01606]
+	<pyneat.Node object at 0x7ffa2b7acf60> -> <pyneat.Node object at 0x7ffa2b7ac1d0> [label=-0.006262]
+	<pyneat.Node object at 0x7ffa2b7acbe0> -> <pyneat.Node object at 0x7ffa2b7ac390> [label=0.185379]
+	<pyneat.Node object at 0x7ffa2b7acbe0> -> <pyneat.Node object at 0x7ffa2b7ac1d0> [label=0.183345]
+	<pyneat.Node object at 0x7ffa2b7acd30> -> <pyneat.Node object at 0x7ffa2b7ac390> [label=1.0]
+	<pyneat.Node object at 0x7ffa2b7ac1d0> -> <pyneat.Node object at 0x7ffa2b7ac390> [label=1.0]
 }
