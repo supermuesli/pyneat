@@ -20,7 +20,7 @@ simply run
 #### what to expect of pyneat
 - generate arbitrary neural networks made for reinforcement learning
 - save and load models using json dumps
-- easily enable/disable recurrent flow, short-term-memory and dicision-only-state
+- easily enable/disable recurrent flow, short-term-memory and decision-only-state
 
 #### usage
 ```python
